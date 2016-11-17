@@ -1,0 +1,88 @@
+<?php
+/**
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link          http://cakephp.org CakePHP(tm) Project
+ * @since         0.10.0
+ * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+
+$cakeDescription = 'CakePHP: the rapid development php framework';
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <?= $this->Html->charset() ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <?= $cakeDescription ?>:
+        <?= $this->fetch('title') ?>
+    </title>
+    <?= $this->Html->meta('icon') ?>
+
+    <?= $this->Html->css('base.css') ?>
+    <?= $this->Html->css('cake.css') ?>
+
+    <?= $this->fetch('meta') ?>
+    <?= $this->fetch('css') ?>
+    <?= $this->fetch('script') ?>
+</head>
+<body>
+    <nav class="top-bar expanded" data-topbar role="navigation">
+        <ul class="title-area large-3 medium-4 columns">
+            <li class="name">
+                <h1><?= $this->Html->link('Concordia', ['controller' => 'users', 'action' =>'login']); ?></h1>
+            </li>
+        </ul>
+        <div class="top-bar-section">
+            <ul class="right">
+                <?php
+                if(!array_key_exists('name', $_SESSION)){
+                ?>    
+                    
+                <li> <?= $this->Html->link('Register', ['controller' => 'add', 'action' => 'add']); ?> </li>
+                
+                <?php }else { 
+                
+                    try{
+                    $name = $_SESSION['name'];    
+                        
+                    }
+                    catch(Error $e){                    
+                    ?> 
+                <li><?= $this->Html->link('Register', ['controller' => 'add', 'action' => 'add']); ?></li>
+               
+                <?php 
+                    }
+                ?>
+                <li><?= $this->Html->link('choose', ['controller' => 'courses', 'action' => 'choose']); ?></li>
+                <li><?= $this->Html->link($name, ['controller' => 'add', 'action' => 'add']); ?></li>
+                <li><?= $this->Html->link('logout', ['controller' => 'users', 'action' => 'logout']); ?></li>
+                 
+                
+                <?php } ?>
+                
+                
+                
+                
+                
+                
+                
+                
+            </ul>
+        </div>
+    </nav>
+    <?= $this->Flash->render() ?>
+    <div class="container clearfix">
+        <?= $this->fetch('content') ?>
+    </div>
+    <footer>
+    </footer>
+</body>
+</html>
