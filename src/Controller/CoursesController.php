@@ -117,10 +117,12 @@ class CoursesController extends AppController
             $id = $this->request->data('id');
             $code = $this->request->data('code');
             $availabilities = $this->request->data('availabilities');
-            $verifyLec = 'FALSE';
-            $verifyTut = 'FALSE';
-            $verifyLab = 'FALSE';
-            $linkedlist = new LinkList();
+            $verifyLec = false;
+            $verifyTut = false;
+            $verifyLab = false;
+            $existsLab = false;
+            $existsTut = false;
+            $list = array();
             $key=0;
             $q = 0;
             //search class by code 
@@ -129,10 +131,6 @@ class CoursesController extends AppController
                 for($i=1; $i <=345; $i++){
                     //get full code EX: COMP + 249 = COMP249
                     $code_class = $code . $id;
-                    
-                     $verifyLec = 'FALSE';
-                     $verifyTut = 'FALSE';
-                     $verifyLab = 'FALSE';
                     
                     //create row object
                     $course = $this->Courses->get($i, ['contain' => ['Klasses']]);
@@ -170,8 +168,13 @@ class CoursesController extends AppController
                     $this->set('course', $course);
                     $this->set('_serialize', ['course']);
                    
+                    $verifyLec = false;
+                    $verifyTut = false;
+                    $verifyLab = false;
+                    $existsLab = false;
+                    $existsTut = false;
                         
-                    
+                        
                         //loop through classes
                         foreach($course->klasses as $klasses){
                          
@@ -181,98 +184,76 @@ class CoursesController extends AppController
                             //filters by types
                             if(trim($klasses->type) == trim('Lec') ){
                                 
-                                if($verifyLec == 'FALSE'){
+                                if(!$verifyLec){
                                     
                                     if(strlen($avail) > strlen($days)){
                                     //if match is found
                                         if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
                                            
-                                            if($linkedlist->firstNode == 'NULL'){
-                                               $linkedlist->insertFirst($klasses);
-                                                $key++;
-                                                $verifyLec = 'TRUE';
-                                                }
-                                            else{
-                                                $linkedlist->insert($klasses, $key);
-                                                $key++;
-                                            }
-                                        
+                                            
+                                             $verifyLec = true;
+                                                      
                                         }                                         
                                     }
-                                }
-                                
-                                    
+                                }         
                             }   
                            
                             
                             if(trim($klasses->type) == trim('Tut') )
                             {
-                               
-                                if($verifyTut == 'FALSE'){
+                                $existsTut = true;
+                                if(!$verifyTut){
                                     
                                     if(strlen($avail) > strlen($days)){
                                     //if match is found
                                         if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
                                            
-                                            if($linkedlist->firstNode == 'NULL'){
-                                               $linkedlist->insertFirst($klasses);
-                                                $key++;
-                                                $verifyTut = 'TRUE';
-                                                }
-                                            else{
-                                                $linkedlist->insert($klasses, $key);
-                                                $key++;
-                                            }
-                                        
-                                        }                                         
-                                    }
-                                }    
-
-                                
-                            }
-                            
-                            if(trim($klasses->type) == trim('Lab')){
-                                
-                                if($verifyTut == 'FALSE'){
-                                    
-                                    if(strlen($avail) > strlen($days)){
-                                    //if match is found
-                                        if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
-                                           
-                                            if($linkedlist->firstNode == 'NULL'){
-                                               $linkedlist->insertFirst($klasses);
-                                                $key++;
-                                                $verifyTut = 'TRUE';
-                                                }
-                                            else{
-                                                $linkedlist->insert($klasses, $key);
-                                                $key++;
-                                            }
-                                        
+                                            
+                                            $verifyTut = true;
+                                                         
                                         }                                         
                                     }
                                 }
+                            
+                            
+                            if(trim($klasses->type) == trim('Lab')){
+                                $existsLab = true;
+                                if(!$verifyLab){
+                                    
+                                    if(strlen($avail) > strlen($days)){
+                                    //if match is found
+                                        if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
+                                           
+                                           
+                                            $verifyLab = true;
+                                                
+                                        
+                                        }     
+                                    }
+                                }
                                 
-                            }
-                            
-                            
+                            }     
                         }
                     
                     $q = $i;    
                     }
-                
-                //add elements to table
-                $current = $linkedlist->firstNode;
-                $c = $this->Courses->newEntity();
-                
-                while($current != null){
-                $q++;    
-                $f = new Courses(['id' => $q, 'code' => $current->code], ['credits' => $current->credits],
-                                      ['name' => $current->name]);
-                    
-                die($linkedlist->firstNode->readNode());   
-                $current = $current->next;    
+                   
+                    if(($verifyLab && $existsLab || !$verifyLab && !$verifyLab || 
+                        !$verifyLab && $existsLab) && ($verifyTut && $existsTut || !$verifyTut
+                        && !$verifyTut || 
+                        !$verifyTut && $existsTut) && $verifyLec){
+                            array_push($list, $course);
+                    }
+                        
                 }
+                
+                $c = $this->Courses->newEntity();
+                $c = $this->Courses->patchEntity($c, $list);
+                $this->set(compact('courses'));
+                $this->set('_serialize', ['course']);
+                
+                
+                
                 
             }
             
@@ -280,159 +261,5 @@ class CoursesController extends AppController
         }   
     }  
 }
+  
 
-
-//*********************LINKED LIST *******************************************************************************
-class ListNode
-{
-    public $data;
-    public $next;
-    function __construct($data)
-    {
-        $this->data = $data;
-        $this->next = NULL;
-    }
-
-    function readNode()
-    {
-        return $this->data;
-    }
-}
-
-class LinkList
-{
-    public $firstNode;
-    public $lastNode;
-    public $count;
-
-    function __construct()
-    {
-        $this->firstNode = 'NULL';
-        $this->lastNode = NULL;
-        $this->count = 0;
-    }
-
-    //insertion at the start of linklist
-    public function insertFirst($data)
-    {
-        $link = new ListNode($data);
-        $link->next = $this->firstNode;
-        $this->firstNode = &$link;
-
-        /* If this is the first node inserted in the list
-           then set the lastNode pointer to it.
-        */
-        if($this->lastNode == NULL)
-            $this->lastNode = &$link;
-            $this->count++;
-    }
-
-
-    //displaying all nodes of linklist
-    public function readList()
-    {
-        $listData = array();
-        $current = $this->firstNode;
-        while($current != NULL)
-        {
-            array_push($listData, $current->readNode());
-            $current = $current->next;
-        }
-        foreach($listData as $v){
-            echo $v." ";
-        }
-    }
-
-    //reversing all nodes of linklist
-    public function reverseList()
-    {
-        if($this->firstNode != NULL)
-        {
-            if($this->firstNode->next != NULL)
-            {
-                $current = $this->firstNode;
-                $new = NULL;
-
-                while ($current != NULL)
-                {
-                    $temp = $current->next;
-                    $current->next = $new;
-                    $new = $current;
-                    $current = $temp;
-                }
-                $this->firstNode = $new;
-            }
-        }
-    }
-
-
-
-    //deleting a node from linklist $key is the value you want to delete
-    public function deleteNode($key)
-    {
-        $current = $this->firstNode;
-        $previous = $this->firstNode;
-
-        while($current->data != $key)
-        {
-            if($current->next == NULL)
-                return NULL;
-            else
-            {
-                $previous = $current;
-                $current = $current->next;
-            }
-        }
-
-        if($current == $this->firstNode)
-         {
-              if($this->count == 1)
-               {
-                  $this->lastNode = $this->firstNode;
-               }
-               $this->firstNode = $this->firstNode->next;
-        }
-        else
-        {
-            if($this->lastNode == $current)
-            {
-                 $this->lastNode = $previous;
-             }
-            $previous->next = $current->next;
-        }
-        $this->count--;  
-    }
-
-
-       //empty linklist
-    public function emptyList()
-    {
-        $this->firstNode == NULL;
-
-    }
-
-
-    //insertion at index
-
-    public function insert($NewItem,$key){
-        if($key == 0){
-        $this->insertFirst($NewItem);
-    }
-    else{
-        $link = new ListNode($NewItem);
-        $current = $this->firstNode;
-        $previous = $this->firstNode;
-
-        for($i=0;$i<$key;$i++)
-        {       
-                $previous = $current;
-                $current = $current->next;
-        }
-
-           $previous->next = $link;
-           $link->next = $current; 
-           $this->count++;
-    }
-
-    }   
-}
