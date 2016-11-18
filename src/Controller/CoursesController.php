@@ -2,7 +2,9 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\ORM\TableRegistry;
 /**
+
  * Courses Controller
  *
  * @property \App\Model\Table\CoursesTable $Courses
@@ -30,7 +32,7 @@ class CoursesController extends AppController
      * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id)
+    public function view($id=6)
     {
         $course = $this->Courses->get($id, [
             'contain' => ['Klasses']
@@ -125,6 +127,7 @@ class CoursesController extends AppController
             $list = array();
             $key=0;
             $q = 0;
+            $coursefound = false;
             //search class by code 
             if($code != '' && $id != ''){
                 
@@ -139,14 +142,18 @@ class CoursesController extends AppController
                 
                     //display chose class
                     if($course->code . '' == $code_class . ''){
+                        $coursefound=true;
                         $this->redirect(['action' => 'view', $i]);
                         
                     }
-                    else{
-                        $this->Flash->error(__('The course does not exist'));
-                    }
+                    
                 
                 }
+                        if(!$coursefound)
+                        $this->Flash->error(__('The course does not exist'));
+                    
+                
+                
                 
             } else if(($code == '' && $id != '') || ($code != '' && $id == ''))
                 
@@ -249,9 +256,11 @@ class CoursesController extends AppController
                 
                 $c = $this->Courses->newEntity();
                 $c = $this->Courses->patchEntity($c, $list);
+                //$this->redirect(['action' => 'index']);
                 $this->set(compact('courses'));
                 $this->set('_serialize', ['course']);
-                
+                $cou = TableRegistry::get('Courses');
+                $query = $cou->query()->add($c);
                 
                 
                 
