@@ -2,7 +2,6 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-
 /**
  * Courses Controller
  *
@@ -112,20 +111,28 @@ class CoursesController extends AppController
     public function choose(){
         if ($this->request->is('post')){
             
+            
+            
             //define variables
             $id = $this->request->data('id');
             $code = $this->request->data('code');
             $availabilities = $this->request->data('availabilities');
-            $verifyLec = false;
-            $verifyTut = false;
-            $verifyLab = false;
-            
+            $verifyLec = 'FALSE';
+            $verifyTut = 'FALSE';
+            $verifyLab = 'FALSE';
+            $linkedlist = new LinkList();
+            $key=0;
+            $q = 0;
             //search class by code 
             if($code != '' && $id != ''){
                 
                 for($i=1; $i <=345; $i++){
                     //get full code EX: COMP + 249 = COMP249
                     $code_class = $code . $id;
+                    
+                     $verifyLec = 'FALSE';
+                     $verifyTut = 'FALSE';
+                     $verifyLab = 'FALSE';
                     
                     //create row object
                     $course = $this->Courses->get($i, ['contain' => ['Klasses']]);
@@ -156,7 +163,7 @@ class CoursesController extends AppController
                 foreach($availabilities as $a){
                 $avail = $avail . $a;    
                 }
-                    
+                    //loops through courses
                     for($i=1; $i<=345; $i++){
                     //create row object
                     $course = $this->Courses->get($i, ['contain' => ['Klasses']]);
@@ -167,34 +174,106 @@ class CoursesController extends AppController
                     
                         //loop through classes
                         foreach($course->klasses as $klasses){
+                         
                         
-                            
                         $days = str_replace('-','',$klasses->day); //Removes the '-' from days     
                            
-                            
                             //filters by types
-                            if($klasses->type . '' == 'Lec' ){
-                                if(!$verifyLec){
+                            if(trim($klasses->type) == trim('Lec') ){
+                                
+                                if($verifyLec == 'FALSE'){
                                     
-                                }else{
-                                    
+                                    if(strlen($avail) > strlen($days)){
+                                    //if match is found
+                                        if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
+                                           
+                                            if($linkedlist->firstNode == 'NULL'){
+                                               $linkedlist->insertFirst($klasses);
+                                                $key++;
+                                                $verifyLec = 'TRUE';
+                                                }
+                                            else{
+                                                $linkedlist->insert($klasses, $key);
+                                                $key++;
+                                            }
+                                        
+                                        }                                         
+                                    }
                                 }
+                                
                                     
-                                
                             }   
+                           
                             
-                            if($klasses->type . '' == 'Tut')
+                            if(trim($klasses->type) == trim('Tut') )
                             {
+                               
+                                if($verifyTut == 'FALSE'){
+                                    
+                                    if(strlen($avail) > strlen($days)){
+                                    //if match is found
+                                        if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
+                                           
+                                            if($linkedlist->firstNode == 'NULL'){
+                                               $linkedlist->insertFirst($klasses);
+                                                $key++;
+                                                $verifyTut = 'TRUE';
+                                                }
+                                            else{
+                                                $linkedlist->insert($klasses, $key);
+                                                $key++;
+                                            }
+                                        
+                                        }                                         
+                                    }
+                                }    
+
                                 
                             }
                             
-                            if($klasses->type . '' == 'Lab'){
+                            if(trim($klasses->type) == trim('Lab')){
+                                
+                                if($verifyTut == 'FALSE'){
+                                    
+                                    if(strlen($avail) > strlen($days)){
+                                    //if match is found
+                                        if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
+                                           
+                                            if($linkedlist->firstNode == 'NULL'){
+                                               $linkedlist->insertFirst($klasses);
+                                                $key++;
+                                                $verifyTut = 'TRUE';
+                                                }
+                                            else{
+                                                $linkedlist->insert($klasses, $key);
+                                                $key++;
+                                            }
+                                        
+                                        }                                         
+                                    }
+                                }
                                 
                             }
+                            
                             
                         }
                     
+                    $q = $i;    
                     }
+                
+                //add elements to table
+                $current = $linkedlist->firstNode;
+                $c = $this->Courses->newEntity();
+                
+                while($current != null){
+                $q++;    
+                $f = new Courses(['id' => $q, 'code' => $current->code], ['credits' => $current->credits],
+                                      ['name' => $current->name]);
+                    
+                die($linkedlist->firstNode->readNode());   
+                $current = $current->next;    
+                }
+                
             }
             
             
@@ -222,13 +301,13 @@ class ListNode
 
 class LinkList
 {
-    private $firstNode;
-    private $lastNode;
-    private $count;
+    public $firstNode;
+    public $lastNode;
+    public $count;
 
     function __construct()
     {
-        $this->firstNode = NULL;
+        $this->firstNode = 'NULL';
         $this->lastNode = NULL;
         $this->count = 0;
     }
