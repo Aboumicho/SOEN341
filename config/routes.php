@@ -63,8 +63,7 @@ Router::scope('/view/:id', function($routes){
 });
 
 Router::scope('/choose', function($routes){
-    $routes->connect('/',['controller'=>'courses', 'action'=>'view']);
-    $routes->connect('/',['controller'=>'courses', 'action'=>'viewprefereddays']);    
+    $routes->connect('/',['controller'=>'courses', 'action'=>'viewdays']);   
     
 });
 

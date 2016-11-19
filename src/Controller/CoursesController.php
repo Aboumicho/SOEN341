@@ -12,6 +12,7 @@ use Cake\ORM\TableRegistry;
 class CoursesController extends AppController
 {
 
+    public static $c;
     /**
      * Index method
      *
@@ -202,6 +203,18 @@ class CoursesController extends AppController
                                                       
                                         }                                         
                                     }
+                                else if(strlen($days) > strlen($avail)){
+                                        if(preg_match('/' . trim($avail) . '/', ''.$days . '')){
+                                           $verifyLec = true;
+                                        }  
+                                        
+                                    }
+                                    else if(strlen($days) == strlen($avail)){
+                                        if($days == $avail){
+                                            $verifyLec = true;
+                                        }
+                                        
+                                    }
                                 }         
                             }   
                            
@@ -220,6 +233,18 @@ class CoursesController extends AppController
                                                          
                                         }                                         
                                     }
+                                    else if(strlen($days) > strlen($avail)){
+                                        if(preg_match('/' . trim($avail) . '/', ''.$days . '')){
+                                           $verifyTut = true;
+                                        }  
+                                        
+                                    }
+                                    else if(strlen($days) == strlen($avail)){
+                                        if($days == $avail){
+                                            $verifyTut = true;
+                                        }
+                                        
+                                    }
                                 }
                             
                             
@@ -230,13 +255,22 @@ class CoursesController extends AppController
                                     if(strlen($avail) > strlen($days)){
                                     //if match is found
                                         if(preg_match('/' . trim($days) . '/', ''.$avail . '')){
-                                           
-                                           
-                                            $verifyLab = true;
-                                                
-                                        
+                                           $verifyLab = true;
                                         }     
                                     }
+                                    else if(strlen($days) > strlen($avail)){
+                                        if(preg_match('/' . trim($avail) . '/', ''.$days . '')){
+                                           $verifyLab = true;
+                                        }  
+                                        
+                                    }
+                                    else if(strlen($days) == strlen($avail)){
+                                        if($days == $avail){
+                                            $verifyLab = true;
+                                        }
+                                        
+                                    }
+                                    
                                 }
                                 
                             }     
@@ -250,17 +284,15 @@ class CoursesController extends AppController
                         && !$verifyTut || 
                         !$verifyTut && $existsTut) && $verifyLec){
                             array_push($list, $course);
+                        
+                        
                     }
                         
                 }
+                $this->set('list', $list);
                 
                 $c = $this->Courses->newEntity();
                 $c = $this->Courses->patchEntity($c, $list);
-                //$this->redirect(['action' => 'index']);
-                $this->set(compact('courses'));
-                $this->set('_serialize', ['course']);
-                $cou = TableRegistry::get('Courses');
-                $query = $cou->query()->add($c);
                 
                 
                 
@@ -268,7 +300,12 @@ class CoursesController extends AppController
             
             
         }   
-    }  
+    }
+    
+    
+    
+    
+    
 }
   
 

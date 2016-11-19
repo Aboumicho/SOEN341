@@ -1,7 +1,7 @@
 <br>
 <br>
 <br>
-
+<?php if(!$this->request->is('post')): ?>
 <div class="index large-4 medium-4 large-offset-4 medium-offset-4 columns">
     <div class="panel">
         <h2 class="text-center">Select your Courses</h2> <br>
@@ -51,3 +51,43 @@
         
     </div>
 </div>
+<?php endif; 
+$i=0;
+?>
+
+
+<?php if($this->request->is('post')): ?>
+
+<div class="related">
+    
+ <table cellpadding="0" cellspacing="0">
+            
+     <?php foreach($list as $l):
+     /*
+     if($i == 10)
+     die($l);
+     
+     $i++;
+     */
+     ?>
+     <tr>
+                
+                <td><?= h($l->id) ?></td>
+                <td><?= h($l->code) ?></td>
+                <td><?= h($l->name) ?></td>
+                
+                <td class="actions">
+                <?= $this->Html->link(__('View'), ['action' => 'view', $l->id]) ?>
+                    <?= $this->Html->link(__('Edit'), ['action' => 'edit', $l->id]) ?>
+                    <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $l->id], ['confirm' => __('Are you sure you want to delete # {0}?', $l->id)]) ?>    
+                </td>
+            </tr>
+     <?php endforeach; ?>
+     
+ </table>   
+    
+    
+    
+</div>
+
+<?php endif; ?>
